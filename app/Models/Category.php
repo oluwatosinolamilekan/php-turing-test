@@ -24,6 +24,9 @@ class Category extends Model
         return $this->belongsTo(Department::class, 'department_id', 'department_id');
     }
 
+
+    
+
     public function isIn(int $department_id)
     {
         return $department_id == $this->getAttribute('department_id');

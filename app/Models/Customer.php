@@ -11,4 +11,5 @@ class Customer extends Model
     protected $table = 'customer';
     protected $primaryKey = 'customer_id';
 
+    protected $guard_name = 'customers';
 }

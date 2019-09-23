@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\{Attribute,AttributeValue,ProductAttribute};
 use Illuminate\Http\Request;
 
 /**
@@ -24,7 +24,13 @@ class AttributeController extends Controller
      */
     public function getAllAttributes()
     {
-        return response()->json(['message' => 'this works'], 202);
+        $attributes = Attribute::all();
+        return response()->json([
+            'message' => 'this works',
+            'data' => $attributes,
+            'code' => 200,
+
+        ]);
     }
 
     /**
@@ -32,9 +38,15 @@ class AttributeController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getSingleAttribute()
+    public function getSingleAttribute($id)
     {
-        return response()->json(['message' => 'this works'], 205);
+        $find_attribute = Attribute::find($id);
+
+        return response()->json([
+            'message' => 'this works',
+            'code' => 200,
+            'data'=>$find_attribute
+        ], 200);
     }
 
     /**
@@ -42,9 +54,14 @@ class AttributeController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getAttributeValues()
+    public function getAttributeValues($value)
     {
-        return response()->json(['message' => 'this works1']);
+        $attribute_value = AttributeValue::select(['attribute_value_id','value'])->findOrFail($value);
+        return response()->json([
+            'message' => 'this works',
+            'code' => 200,
+            'data' => $attribute_value
+        ]);
     }
 
     /**
@@ -52,9 +69,14 @@ class AttributeController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getProductAttributes()
+    public function getProductAttributes($product_id)
     {
-        return response()->json(['message' => 'this works']);
+        $product_attribute = ProductAttribute::where('customer_id',$product_id)->first();
+        return response()->json([
+            'message' => 'this works',
+            'code' => 200,
+            'data' => $product_attribute
+        ]);
 
     }
 }

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Department;
 use App\Models\Product;
+use App\Models\Category;
+use DB;
 
 /**
  * The Product controller contains all methods that handles product request
@@ -23,7 +25,16 @@ class ProductController extends Controller
      */
     public function getAllProducts()
     {
-        return response()->json(['status' => true, 'products' => Product::countedAndPaginableResults() ]);
+        return response()->json([
+            'status' => true, 'products' => Product::select([
+                'product_id',
+                'name',
+                'description',
+                'price',
+                'discounted_price',
+                'thumbnail'
+            ])->paginate(10) 
+        ]);
     }
 
     /**
@@ -31,9 +42,14 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getProduct(Product $product)
+    public function getProduct($product)
     {
-        return response()->json(['status' => true, 'products' => $product]);
+        $find_product = Product::findOrFail($product);
+        return response()->json([
+            'status' => true, 
+            'code' => 200,
+            'products' => $find_product,
+        ]);
     }
 
     /**
@@ -41,19 +57,76 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function searchProduct()
+    public function searchProduct(Request $request)
     {
-        return response()->json(['message' => 'this works']);
+        $query = $request->query;
+        $products = Product::where('name','LIKE',"%$query%")
+            ->orwhere('description','LIKE',"%$query%")
+            ->paginate(10);
+            return response()->json([
+                'message' => 'this works',
+                'code' => 200,
+                "status" => "success",
+                "data" => $products
+            ]);
+        
+               
     }
+
+   
 
     /**
      * Returns all products in a product category.
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getProductsByCategory()
+    //not done
+    public function getProductsByCategory($category_id)
     {
-        return response()->json(['status' => true, 'products' => Product::countedAndPaginableResultsWithDepartments() ]);
+        return response()->json([
+            'status' => true, 
+            'products' => Product::paginate(10) 
+        ]);
+    }
+
+    /**
+     * Returns list reviews for a product 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    //not done
+    public function getProductsReview($product_id)
+    {
+        $product_review = DB::table('review')->where('review_id',$product_id)
+        ->select([
+            'name',
+            'review',
+            'rating',
+            'created_on'
+        ])
+        ->get();
+        return response()->json([
+            'status' => true, 
+            'products' => $product_review 
+        ]);
+    }
+
+    /**
+     *  allows a user to post a product review
+     * @return \Illuminate\Http\JsonResponse
+     */
+    //not done
+    public function postProductsReview(Request $request)
+    {
+        $product_review = DB::table('review')->insert([
+            'rating' => integer($request->rating),
+            'product_id' => integer($request->product_id),
+            'review' => $request->review,
+        ]);
+        return response()->json([
+            'status' => true, 
+            'code' => 201,
+            'products' => $product_review 
+        ]);
     }
 
     /**
@@ -61,9 +134,18 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getProductsInDepartment()
+    public function getProductsInDepartment($product)
     {
-        return response()->json(['message' => 'this works']);
+
+        $find_product = Product::findOrFail($product)
+        ->join('department', 'product.product_id', '=', 'department.department_id')
+        ->first();
+        return response()->json([
+            'message' => 'this works',
+            'code' => 200,
+            "status" => "success",
+            "data" => $find_product
+        ]);
     }
 
     /**
@@ -73,7 +155,13 @@ class ProductController extends Controller
      */
     public function getAllDepartments()
     {
-        return response()->json(['message' => 'this works']);
+        $departments = Department::all();
+        return response()->json([
+            'message' => 'this works',
+             "status" => "success",
+            "code" => 200,
+            "data" => $departments,
+        ]);
     }
 
     /**
@@ -81,10 +169,19 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getDepartment(Department $dep)
+    public function getDepartment($dep)
     {
-        return response()->json(['status' => false, 'department' => $dep]);
-
+        $department = Department::findOrFail($dep);
+        if (!$department) {
+            return response()->json(['status' => false, 'department' => $dep]);
+        }else{
+            return response()->json([
+                'message' => 'this works',
+                "status" => "success",
+                "code" => 200,
+                "department" => $department
+            ]);
+        }
     }
 
     /**
@@ -94,7 +191,24 @@ class ProductController extends Controller
      */
     public function getAllCategories()
     {
-        return response()->json(['status' => true, 'departments' => Department::all()]);
+        return response()->json(['status' => true, 'categories' => Category::all()]);
+    }
+
+     /**
+     * Returns all categories.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function toString($product)
+    {
+        $find_product = Category::findOrFail($product);
+        return response()->json([
+            'message' => 'this works',
+            'code' => 200,
+            "status" => "success",
+            "product" => $find_product
+        ]);
     }
 
     /**
@@ -102,8 +216,44 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getDepartmentCategories()
+    public function getDepartmentCategories($id)
     {
-        return response()->json(['message' => 'this works']);
+        $department = Department::with('category')->find($id);
+        return response()->json([
+            'message' => 'this works',
+            'code' => 200,
+            "status" => "success",
+            "category" => $department
+        ]);
+    }
+
+    public function getProductCategory($product)
+    {
+        $find_product = Product::findOrFail($product)
+        ->join('product_category', 'product.product_id', '=', 'product_category.category_id')
+        ->select([
+            'category_id',
+            // 'deparment_id',
+            'name'
+        ])
+        ->first();
+        return response()->json([
+            'message' => 'this works',
+            'code' => 200,
+            "status" => "success",
+            "data" => $find_product
+        ]);
+    }
+
+
+    public function getCategoryinDeparment($category)
+    {
+        $category = Category::with('department')->find($category);
+        return response()->json([
+            'message' => 'this works',
+            'code' => 200,
+            "status" => "success",
+            "category" => $category
+        ]);
     }
 }

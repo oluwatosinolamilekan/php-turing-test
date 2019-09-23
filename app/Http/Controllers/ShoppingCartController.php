@@ -1,7 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Validator;
+use App\Models\{Order,Customer};
+Use Str;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 
 /**
@@ -24,7 +27,11 @@ class ShoppingCartController extends Controller
      */
     public function generateUniqueCart()
     {
-        return response()->json(['message' => 'this works']);
+        
+        return response()->json([
+            'message' => 'this works',
+            'cart_id' => Str::uuid(),
+        ]);
     }
 
     /**
@@ -32,9 +39,34 @@ class ShoppingCartController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function addItemToCart()
+    public function addItemToCart(Request $request)
     {
-        return response()->json(['message' => 'this works']);
+        $validator = Validator::make($request->all(), [
+            'cart_id' => 'required',
+            'product_id' => 'required',
+            'attributes' => 'required',
+            'quantity' => 'required',
+        ]);
+        
+        $data = $request->all();
+
+        $save_cart = session()->put('get_cart', $validator);
+        
+        if ($save_cart) {
+            return response()->json([
+                'message' => 'this works',
+                'data' => $save_cart
+        ]);
+            
+        }else{
+            return response()->json([
+                'message' => 'this works',
+                'data' => null
+            ]);
+
+        }
+
+
     }
 
     /**
@@ -82,9 +114,32 @@ class ShoppingCartController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function createOrder()
+    public function createOrder(Request $request)
     {
-        return response()->json(['message' => 'this works']);
+        $validator = Validator::make($request->all(), [
+            'cart_id' => 'required',
+            'shipping_id' => 'required',
+            'tax_id' => 'required',
+        ]);
+
+        $new_order = new Order;
+        $new_order->cart_id = $request->cart_id;
+        $new_order->shipping_id = $request->shipping_id;
+        $new_order->tax_id = $request->tax_id;
+        $new_order->save();
+        if ($new_order) {
+            return response()->json([
+                'message' => 'this works',
+                'data' => $new_order
+            ]);
+            
+        }else{
+            return response()->json([
+                'data' => null
+            ]);
+        }
+
+
     }
 
     /**
@@ -92,19 +147,80 @@ class ShoppingCartController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getCustomerOrders()
+    public function getCustomerOrders(Request $request)
     {
-        return response()->json(['message' => 'this works']);
+        $order_id = $request->order_id;
+        $getOrder = Order::where('order_id',$order_id)->select([
+            'order_id',
+            'total_amount',
+            'created_on',
+            'shipped_on',
+            // 'name'
+        ])->first();
+        if($getOrder){
+            return response()->json([
+                'message' => 'this works',
+                'data' => $getOrder
+            ]);
+
+        }else{
+            return response()->json([
+                'data' => null
+            ]);
+        }
+
     }
+
+    /**
+     * Get  orders shortlist.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function shortDetail(Request $request, $order_id)
+    {
+        $getOrder = Order::where('order_id',$order_id)->select([
+            'order_id',
+            'total_amount',
+            'created_on',
+            'shipped_on',
+            // 'name'
+        ])->first();
+
+        if($getOrder){
+            return response()->json([
+                'message' => 'this works',
+                'data' => $getOrder
+            ]);
+
+        }else{
+            return response()->json([
+                'data' => null
+            ]);
+        }
+
+    }
+
+    
 
     /**
      * Get the details of an order.
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getOrderSummary()
+    public function getOrderSummary($order_id)
     {
-        return response()->json(['message' => 'this works']);
+        $order = Order::find($order_id);
+        if ($order) {
+            return response()->json([
+                'message' => 'this works',
+                'data' => $order
+            ]);
+            
+        }else{
+            return response()->json([
+                'data' => null
+            ]);
+        }
     }
 
     /**

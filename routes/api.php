@@ -22,19 +22,24 @@ Route::group(['prefix' => 'attributes'], function () {
 
 Route::post('/customers', 'CustomerController@updateCreditCard');
 Route::post('/customers/login', 'CustomerController@login');
-Route::get('/customer', 'CustomerController@getCustomerProfile');
-Route::put('/customer', 'CustomerController@apply');
-Route::put('/customer/address', 'CustomerController@updateCustomerAddress');
-Route::put('/customer/creditCard', 'CustomerController@updateCreditCard');
+Route::get('/customer/{customer_id}', 'CustomerController@getCustomerProfile');
+Route::put('/customer/{customer_id}', 'CustomerController@apply');
+Route::put('/customer/address/{customer_id}', 'CustomerController@updateCustomerAddress');
+Route::put('/customer/creditCard/{customer_id}', 'CustomerController@updateCreditCard');
 
 
+
+
+
+Route::get('/products/search', 'ProductController@searchProduct');
 
 Route::group(['prefix' => 'products'], function () {
-    Route::get('/', 'ProductController@getAllCategories');
+    Route::get('/', 'ProductController@getAllProducts');
     Route::get('/{product_id}', 'ProductController@getProduct');
-    Route::get('/search', 'ProductController@searchProduct');
     Route::get('/inCategory/{category_id}', 'ProductController@getProductsByCategory');
     Route::get('/inDepartment/{department_id}', 'ProductController@getProductsInDepartment');
+    Route::get('/{product_id}/reviews', 'ProductController@getProductsReview');
+    Route::post('/{product_id}/reviews', 'ProductController@postProductsReview');
 });
 
 
@@ -48,6 +53,8 @@ Route::group(['prefix' => 'categories'], function () {
     Route::get('/', 'ProductController@getAllCategories');
     Route::get('/{category_id}', 'ProductController@toString');
     Route::get('/inDepartment/{category_id}', 'ProductController@getDepartmentCategories');
+    Route::get('/inProduct/{product_id}', 'ProductController@getProductCategory');
+
 
 });
 
@@ -71,6 +78,7 @@ Route::group(['prefix' => 'orders'], function () {
     Route::post('/', 'ShoppingCartController@createOrder');
     Route::get('/inCustomer', 'ShoppingCartController@getCustomerOrders');
     Route::get('/{order_id}', 'ShoppingCartController@getOrderSummary');
+    Route::get('shortDetail/{order_id}', 'ShoppingCartController@shortDetail');
 });
 
 Route::post('/stripe/charge', 'ShoppingCartController@processStripePayment');

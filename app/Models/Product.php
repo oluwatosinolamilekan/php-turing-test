@@ -49,4 +49,9 @@ class Product extends Model
             'category_id'
         );
     }
+
+    public function aproductcategory()
+    {
+        return $this->belongsTo(Category::class,'category_id');
+    }
 }
