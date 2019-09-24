@@ -84,8 +84,17 @@ class ShoppingCartController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateCartItem()
+    public function updateCartItem($item_id)
     {
+        
+        $validator = Validator::make($request->all(), [
+            'quantity' => 'required',
+        ]);
+
+        $cart_id = $request->quantity;
+        
+        
+
         return response()->json(['message' => 'this works']);
     }
 
@@ -94,9 +103,21 @@ class ShoppingCartController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function emptyCart()
+    public function emptyCart($cart_id)
     {
-        return response()->json(['message' => 'this works']);
+        $cart = Cart::where('id',$cart_id)->delete();
+        if ($cart) {
+            return response()->json([
+                'message' => 'this works',
+                'data' => $cart
+            ]);
+            
+        }else{
+            return response()->json([
+                'data' => null
+            ]);
+
+        }
     }
 
     /**
@@ -104,9 +125,21 @@ class ShoppingCartController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function removeItemFromCart()
+    public function removeItemFromCart($item_id)
     {
-        return response()->json(['message' => 'this works']);
+        $cart = Cart::where('id',$item_id)->delete();
+        if ($cart) {
+            return response()->json([
+                'message' => 'this works',
+                'data' => $cart
+            ]);
+            
+        }else{
+            return response()->json([
+                'data' => null
+            ]);
+
+        }
     }
 
     /**

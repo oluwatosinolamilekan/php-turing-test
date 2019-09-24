@@ -23,7 +23,7 @@ class ShippingController extends Controller
      */
     public function getShippingRegions()
     {
-        return response()->json(['success' => false, 'shipping' => ShippingRegion::all()]);
+        return response()->json(['success' => true, 'shipping' => ShippingRegion::all()]);
     }
 
     /**

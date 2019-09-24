@@ -8,6 +8,6 @@ class ProductAttribute extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'customer';
-    protected $primaryKey = 'customer_id';
+    protected $table = 'product_attribute';
+    protected $primaryKey = 'product_id';
 }

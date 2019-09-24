@@ -74,7 +74,6 @@ Route::group(['prefix' => 'shoppingcart'], function () {
 });
 
 Route::group(['prefix' => 'orders'], function () {
-
     Route::post('/', 'ShoppingCartController@createOrder');
     Route::get('/inCustomer', 'ShoppingCartController@getCustomerOrders');
     Route::get('/{order_id}', 'ShoppingCartController@getOrderSummary');
